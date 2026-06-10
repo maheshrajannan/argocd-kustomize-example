@@ -44,43 +44,9 @@ argocd-kustomize-example/
     └── appset.yaml            # OPTIONAL: Git generator stamps an App per overlays/* dir
 ```
 
-## Run it (kind, ~10 min)
+## Run it
 
-```bash
-# 1. Cluster + ArgoCD
-kind create cluster --name gitops-demo
-kubectl create namespace argocd
-kubectl apply -n argocd --server-side -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-# --server-side needed: the ApplicationSet CRD is >256KB, too big for the
-# last-applied-configuration annotation that client-side apply writes.
-kubectl -n argocd wait deploy --all --for=condition=Available --timeout=300s
-
-# 2. See what Kustomize renders BEFORE any GitOps (build confidence first)
-kubectl kustomize overlays/dev    # 1 replica, dev- prefix, ns hello-dev
-kubectl kustomize overlays/prod   # 3 replicas, prod- prefix, + PDB, bigger limits
-
-# 3. Push this folder to a Git repo, update repoURL in argocd/*.yaml, then:
-kubectl apply -f argocd/app-dev.yaml -f argocd/app-prod.yaml
-
-# 4. ArgoCD UI
-kubectl -n argocd port-forward svc/argocd-server 8080:443
-# password:
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d
-# open https://localhost:8080  (user: admin)
-```
-
-## The two demos that matter in the interview
-
-**Demo 1 — drift detection (Sergei's bullet):**
-```bash
-kubectl -n hello-dev scale deploy dev-hello-web --replicas=5   # manual change = drift
-# dev app: selfHeal reverts it within seconds — watch it snap back to 1
-kubectl -n hello-prod scale deploy prod-hello-web --replicas=1
-# prod app: goes OutOfSync and STAYS there — a human syncs via PR/UI. Audit trail.
-```
-
-**Demo 2 — promotion is a PR:**
-Change `replicas: 3 → 4` in `overlays/prod/kustomization.yaml`, commit, push. ArgoCD shows the diff; sync applies it. **Nobody ran kubectl against prod.** That's the whole point.
+Full walkthrough — prereqs, install (with the server-side-apply gotcha), UI access, the drift-detection and promotion-is-a-PR demos, **proof-it-runs screenshots**, and troubleshooting: **[HowToRun.md](HowToRun.md)**. Or just `./run-demo.sh`. Real issues hit during the first run are documented in [issues/issue.md](issues/issue.md).
 
 ## Talking points this example earns you
 
