@@ -14,7 +14,9 @@ kubectl config use-context kind-gitops-demo
 
 echo "==> 3/5 Install ArgoCD (takes ~2 min)"
 kubectl get ns argocd >/dev/null 2>&1 || kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+# --server-side: the ApplicationSet CRD exceeds the 256KB annotation limit
+# that client-side apply needs for last-applied-configuration.
+kubectl apply -n argocd --server-side -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 kubectl -n argocd wait deploy --all --for=condition=Available --timeout=300s
 
 echo "==> 4/5 Register the Applications"

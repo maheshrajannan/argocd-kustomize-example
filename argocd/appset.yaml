@@ -9,7 +9,7 @@ metadata:
 spec:
   generators:
     - git:
-        repoURL: https://github.com/maheshrajannan/argocd-kustomize-demo
+        repoURL: https://github.com/maheshrajannan/argocd-kustomize-example
         revision: main
         directories:
           - path: overlays/*
@@ -19,7 +19,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/maheshrajannan/argocd-kustomize-demo
+        repoURL: https://github.com/maheshrajannan/argocd-kustomize-example
         targetRevision: main
         path: "{{path}}"
       destination:

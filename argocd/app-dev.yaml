@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/maheshrajannan/argocd-kustomize-demo   # your repo
+    repoURL: https://github.com/maheshrajannan/argocd-kustomize-example   # your repo
     targetRevision: main
     path: overlays/dev          # <-- ArgoCD points at the OVERLAY, never the base
   destination:

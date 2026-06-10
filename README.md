@@ -50,7 +50,9 @@ argocd-kustomize-example/
 # 1. Cluster + ArgoCD
 kind create cluster --name gitops-demo
 kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl apply -n argocd --server-side -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+# --server-side needed: the ApplicationSet CRD is >256KB, too big for the
+# last-applied-configuration annotation that client-side apply writes.
 kubectl -n argocd wait deploy --all --for=condition=Available --timeout=300s
 
 # 2. See what Kustomize renders BEFORE any GitOps (build confidence first)
