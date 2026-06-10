@@ -1,8 +1,8 @@
 # ArgoCD + Kustomize GitOps — Minimal Working Example
 
-A small, runnable demo of the GitOps pattern Sergei runs at Ecolab: **one Kustomize base, per-env overlays, ArgoCD watching the overlay paths.** Built 2026-06-10 as final-round prep.
+A small, runnable demo of a common production GitOps pattern: **one Kustomize base, per-env overlays, ArgoCD watching the overlay paths.**
 
-## The mental model (say this in the interview)
+## The mental model
 
 > "The base is the single source of truth for WHAT the app is. Overlays only declare HOW each environment differs — a patch, never a copy. ArgoCD points at the overlay path, so Git is the deploy interface: promotion is a PR that changes an overlay, and drift is anything the cluster does that Git didn't say."
 
@@ -48,10 +48,9 @@ argocd-kustomize-example/
 
 Full walkthrough — prereqs, install (with the server-side-apply gotcha), UI access, the drift-detection and promotion-is-a-PR demos, **proof-it-runs screenshots**, and troubleshooting: **[HowToRun.md](HowToRun.md)**. Or just `./run-demo.sh`. Real issues hit during the first run are documented in [issues/issue.md](issues/issue.md).
 
-## Talking points this example earns you
+## Design decisions
 
-1. **Patch, never copy** — base carries proven defaults (probes, requests/limits = my inheritable-baseline instinct from the EKS work); overlays are diffs. No copy-paste divergence between envs.
-2. **Sync posture per environment** — dev auto-heals; prod detects-and-alerts with fix-via-PR. That asymmetry is deliberate: in regulated environments the audit trail IS the feature. (GxP carry-over.)
+1. **Patch, never copy** — the base carries proven defaults (probes, requests/limits); overlays are diffs. No copy-paste divergence between envs.
+2. **Sync posture per environment** — dev auto-heals; prod detects-and-alerts with fix-via-PR. That asymmetry is deliberate: in regulated environments the audit trail IS the feature.
 3. **Prod-only resources** — the PDB exists only in the prod overlay. Same base, different operational guarantees.
 4. **ApplicationSet as the scale-out** — the optional `appset.yaml` Git generator turns "add a QA env" into "add a directory." Cluster generator = WHERE, Git generator = WHAT, Matrix = both. (Hub-and-Spoke is this idea applied to platform add-ons across clusters.)
-5. **Honest framing if probed:** "I ran ArgoCD in production at Takeda with multi-env promotion; my prod GitOps was Helm-and-raw-manifest flavored. I built this Kustomize lab to map my promotion model onto overlays — the model is identical, the patch mechanics are new-but-trivial."

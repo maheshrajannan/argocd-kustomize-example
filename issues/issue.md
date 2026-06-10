@@ -29,9 +29,21 @@ kubectl apply -n argocd --server-side -f .../install.yaml
 
 ## Symptom 2 — field-manager conflict on retry
 
+Full error output (verbatim):
+
 ```
-Apply failed with 1 conflict: conflict with "kubectl-client-side-apply"
-using networking.k8s.io/v1: .spec.ingress
+Apply failed with 1 conflict: conflict with "kubectl-client-side-apply" using networking.k8s.io/v1: .spec.ingress
+Please review the fields above--they currently have other managers. Here
+are the ways you can resolve this warning:
+* If you intend to manage all of these fields, please re-run the apply
+  command with the `--force-conflicts` flag.
+* If you do not intend to manage all of the fields, please edit your
+  manifest to remove references to the fields that should keep their
+  current managers.
+* You may co-own fields by updating your manifest to match the existing
+  value; in this case, you'll become the manager if the other manager(s)
+  stop managing the field (remove it from their configuration).
+See https://kubernetes.io/docs/reference/using-api/server-side-apply/#conflicts
 ```
 
 **Root cause:** the FIRST (client-side) apply partially succeeded before dying
@@ -71,11 +83,11 @@ separately with `kubectl -n argocd get sts` if anything acts up later.
 
 ---
 
-## Interview note (why this issue is worth keeping)
+## Why this issue is worth keeping
 
-This is a real, hands-on war story for the Sergei round: *"installing ArgoCD I
-hit both classic server-side-apply failure modes in one session — the 256KB
-last-applied annotation limit on the ApplicationSet CRD, then the
-field-manager conflict left behind by the partial client-side apply. SSA's
-managedFields ownership model explains both."* Sergei runs ApplicationSets —
-he has almost certainly hit the same thing.
+Installing ArgoCD surfaced both classic server-side-apply failure modes in one
+session — the 256KB last-applied annotation limit on the ApplicationSet CRD,
+then the field-manager conflict left behind by the partial client-side apply.
+SSA's managedFields ownership model explains both. Anyone running
+ApplicationSets at scale is likely to hit the same thing, so the verbatim
+errors and fixes are logged above for reference.
