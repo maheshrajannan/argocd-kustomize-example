@@ -28,3 +28,58 @@ spec:
       syncPolicy:
         syncOptions:
           - CreateNamespace=true
+
+# ---------------------------------------------------------------------------
+# NOT ACTIVE in this single-cluster lab — included to show the full generator
+# model. The three axes: Cluster = WHERE, Git = WHAT, Matrix = both.
+#
+# CLUSTER GENERATOR (WHERE): fans out across clusters registered with ArgoCD
+# (`argocd cluster add`). Each matching cluster gets its own Application —
+# this is the engine behind hub-and-spoke platform-add-on delivery: a newly
+# registered cluster automatically receives the platform stack. The label
+# selector controls fan-out (e.g. keep GPU-only add-ons off non-GPU spokes).
+#
+#  generators:
+#    - clusters:
+#        selector:
+#          matchLabels:
+#            env: prod            # only clusters labeled env=prod
+#  template:
+#    metadata:
+#      name: "hello-web-{{name}}"          # {{name}} = registered cluster name
+#    spec:
+#      source:
+#        repoURL: https://github.com/maheshrajannan/argocd-kustomize-example
+#        targetRevision: main
+#        path: overlays/prod
+#      destination:
+#        server: "{{server}}"              # {{server}} = that cluster's API URL
+#        namespace: hello-prod
+#
+# MATRIX GENERATOR (WHERE x WHAT): cross-product of the two — every overlay
+# to every matching cluster. "Deploy every env of this app to every spoke."
+#
+#  generators:
+#    - matrix:
+#        generators:
+#          - git:
+#              repoURL: https://github.com/maheshrajannan/argocd-kustomize-example
+#              revision: main
+#              directories:
+#                - path: overlays/*
+#          - clusters:
+#              selector:
+#                matchLabels:
+#                  fleet: spoke
+#  template:
+#    metadata:
+#      name: "hello-web-{{path.basename}}-{{name}}"   # e.g. hello-web-prod-cluster2
+#    spec:
+#      source:
+#        repoURL: https://github.com/maheshrajannan/argocd-kustomize-example
+#        targetRevision: main
+#        path: "{{path}}"
+#      destination:
+#        server: "{{server}}"
+#        namespace: "hello-{{path.basename}}"
+# ---------------------------------------------------------------------------
