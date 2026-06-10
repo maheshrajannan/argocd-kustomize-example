@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hello-web-prod
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/maheshrajannan/argocd-kustomize-demo
+    targetRevision: main
+    path: overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hello-prod
+  # PROD: detect-and-alert, fix goes through a PR (audit trail).
+  # No `automated` block = ArgoCD shows OutOfSync but does NOT auto-sync.
+  # This is the regulated-environment default (GxP instinct).
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

@@ -1,0 +1,30 @@
+# OPTIONAL stretch: one ApplicationSet replaces both Application files.
+# Git generator discovers every overlays/* directory and stamps out an App per env.
+# "Git = WHAT" — add overlays/qa/ to the repo and a qa Application appears. No new YAML.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: hello-web
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/maheshrajannan/argocd-kustomize-demo
+        revision: main
+        directories:
+          - path: overlays/*
+  template:
+    metadata:
+      name: "hello-web-{{path.basename}}"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/maheshrajannan/argocd-kustomize-demo
+        targetRevision: main
+        path: "{{path}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "hello-{{path.basename}}"
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true

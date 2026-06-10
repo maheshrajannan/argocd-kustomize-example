@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# BASE = the single source of truth for WHAT the app is.
+# Overlays only say HOW it differs per environment.
+resources:
+  - deployment.yaml
+  - service.yaml
+
+# Modern `labels` (not deprecated `commonLabels`, which silently mutates
+# selectors — immutable after create, a classic prod foot-gun).
+labels:
+  - pairs:
+      app.kubernetes.io/managed-by: argocd
+    includeSelectors: false

@@ -1,0 +1,38 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# PROD overlay: scaled out, protected by a PDB, bigger limits.
+namespace: hello-prod
+namePrefix: prod-
+
+resources:
+  - ../../base
+  - pdb.yaml          # prod-only resource — doesn't exist in dev at all
+
+labels:
+  - pairs:
+      env: prod
+
+patches:
+  # 3 replicas + production resource envelope
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: hello-web
+      spec:
+        replicas: 3
+        template:
+          spec:
+            containers:
+              - name: hello-web
+                resources:
+                  requests:
+                    cpu: 250m
+                    memory: 128Mi
+                  limits:
+                    cpu: 500m
+                    memory: 256Mi
+    target:
+      kind: Deployment
+      name: hello-web

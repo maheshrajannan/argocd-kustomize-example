@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: hello-web
+spec:
+  # Survive a node drain / upgrade without dropping below 2 pods.
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: hello-web
